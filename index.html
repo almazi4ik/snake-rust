@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Slither.io стиль — Змейка на Rust</title>
+    <style>
+        * {
+            user-select: none;
+        }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a472a, #0e2a1a);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: monospace;
+            touch-action: none;
+        }
+        .game-container {
+            background: #2b5e3b;
+            border-radius: 48px;
+            padding: 20px;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.4);
+        }
+        .game-wrapper {
+            background: #1e3a2a;
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: inset 0 0 0 3px #5a9e6e, 0 0 0 6px #3c2b1f;
+        }
+        #game-board {
+            position: relative;
+            width: 600px;
+            height: 600px;
+            background-color: #1f3d2c;
+            cursor: none;
+        }
+        .hud {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 28px;
+            color: #f9e7c2;
+            font-weight: bold;
+        }
+        .score-box {
+            background: #2d2218;
+            padding: 6px 18px;
+            border-radius: 60px;
+            font-size: 1.8rem;
+        }
+        button {
+            background: #e6b45e;
+            border: none;
+            font-family: inherit;
+            font-weight: bold;
+            padding: 6px 18px;
+            border-radius: 60px;
+            cursor: pointer;
+        }
+        .controls {
+            text-align: center;
+            padding: 12px;
+            color: #bde5c5;
+        }
+    </style>
+</head>
+<body>
+<div>
+    <div class="game-container">
+        <div class="hud">
+            <div class="score-box">🍎 ДЛИНА: <span id="scoreSpan">3</span></div>
+            <button id="resetBtn">🐍 НОВАЯ</button>
+        </div>
+        <div class="game-wrapper">
+            <div id="game-board"></div>
+        </div>
+        <div class="controls">⬆️ ⬇️ ⬅️ ➡️ &nbsp;&nbsp;| мышь / палец</div>
+    </div>
+</div>
+
+<script type="module">
+    import init, { start_game, change_direction, reset_game } from './pkg/snake_rust.js';
+    
+    async function run() {
+        await init();
+        start_game();
+        
+        // Управление с клавиатуры
+        window.addEventListener('keydown', (e) => {
+            const key = e.key;
+            if (key === 'ArrowUp') change_direction('up');
+            else if (key === 'ArrowDown') change_direction('down');
+            else if (key === 'ArrowLeft') change_direction('left');
+            else if (key === 'ArrowRight') change_direction('right');
+            e.preventDefault();
+        });
+        
+        // Управление мышью: свайпы по доске
+        let touchStart = null;
+        const board = document.getElementById('game-board');
+        
+        board.addEventListener('mousedown', (e) => {
+            touchStart = { x: e.clientX, y: e.clientY };
+        });
+        
+        window.addEventListener('mouseup', (e) => {
+            if (!touchStart) return;
+            const dx = e.clientX - touchStart.x;
+            const dy = e.clientY - touchStart.y;
+            if (Math.abs(dx) < 15 && Math.abs(dy) < 15) return;
+            if (Math.abs(dx) > Math.abs(dy)) {
+                if (dx > 0) change_direction('right');
+                else change_direction('left');
+            } else {
+                if (dy > 0) change_direction('down');
+                else change_direction('up');
+            }
+            touchStart = null;
+        });
+        
+        document.getElementById('resetBtn').onclick = () => {
+            location.reload(); // простая перезагрузка
+        };
+    }
+    
+    run();
+</script>
+</body>
+</html>
